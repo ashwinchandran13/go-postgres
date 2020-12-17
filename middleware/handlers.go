@@ -8,8 +8,10 @@ import (
 	"log"
 	"net/http" //to acess request and response object of api
 	"os"       //to read environment variables to ensure security
+	"strconv"
 
 	//to get params from route
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv" //package to read .env
 	//postgres goland driver
 )
@@ -80,4 +82,60 @@ func PostJob(w http.ResponseWriter, r *http.Request) {
 }
 
 //GetJob will return job by its id
-func GetUser()
+func GetJob(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	//get the jobid from request params, key is "id"
+	params := mux.Vars(r)
+
+	//convert id type string to int
+	id, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		log.Fatalf("Unable to convert string into int.  %v", err)
+	}
+
+	//calling getJob function with job id to retrieve that job details
+	job, err := getJob(int64(id))
+
+	if err != nil {
+		log.Fatalf("Unable to get user. %v", err)
+	}
+
+	//send the response
+	json.NewEncoder(w).Encode(job)
+}
+
+// FilterJob to return filtered results
+func FilterJob(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	//get the job name from request params
+	params := mux.Vars(r)
+
+	name, err := params["name"]
+
+	if err != nil {
+		log.Fatalf("No job name recieved. $v", err)
+	}
+
+	//call the filterJob function with job name to retrieve a list of posted job with that name
+	job, err := filterJob(string(name))
+
+	if err != nil {
+		log.Fatalf("Unable to get any valid job. %v", err)
+	}
+
+	//send response
+	json.NewEncoder(w).Encode(job)
+}
+
+func DeleteJob(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+}
