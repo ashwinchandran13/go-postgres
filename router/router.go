@@ -15,6 +15,7 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/filterjob/{name}", middleware.FilterJob).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/newjob", middleware.PostJob).Methods("POST", "OPTIONS")
 	router.HandleFunc("/api/deletejob/{id}", middleware.DeleteJob).Methods("DELETE", "OPTIONS")
+	router.HandleFunc("/api/getalljobs", middleware.GetAllJob).Methods("GET", "OPTIONS")
 
 	return router
 }

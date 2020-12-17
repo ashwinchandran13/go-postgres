@@ -118,6 +118,21 @@ func FilterJob(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(job)
 }
 
+// GetAllJob will return all the users
+func GetAllJob(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// get all the users in the db
+	jobs, err := getAllJobs()
+
+	if err != nil {
+		log.Fatalf("Unable to get all user. %v", err)
+	}
+
+	// send all the users as response
+	json.NewEncoder(w).Encode(jobs)
+}
+
 // DeleteJob to delete entries
 func DeleteJob(w http.ResponseWriter, r *http.Request) {
 
@@ -255,6 +270,49 @@ func filterJob(name string) ([]models.Job, error) {
 	}
 
 	// return empty job on error
+	return jobs, err
+}
+
+// get one user from the DB by its userid
+func getAllJobs() ([]models.Job, error) {
+	// create the postgres db connection
+	db := createConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	var jobs []models.Job
+
+	// create the select sql query
+	sqlStatement := `SELECT * FROM jobs`
+
+	// execute the sql statement
+	rows, err := db.Query(sqlStatement)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// close the statement
+	defer rows.Close()
+
+	// iterate over the rows
+	for rows.Next() {
+		var job models.Job
+
+		// unmarshal the row object to user
+		err = rows.Scan(&job.ID, &job.Name, &job.Openings, &job.Location)
+
+		if err != nil {
+			log.Fatalf("Unable to scan the row. %v", err)
+		}
+
+		// append the user in the users slice
+		jobs = append(jobs, job)
+
+	}
+
+	// return empty user on error
 	return jobs, err
 }
 
