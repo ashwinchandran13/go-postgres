@@ -99,25 +99,6 @@ func GetJob(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(job)
 }
 
-// FilterJob to return filtered results
-func FilterJob(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	//get the job name from request params
-	params := mux.Vars(r)
-
-	//call the filterJob function with job name to retrieve a list of posted job with that name
-	job, err := filterJob(string(params["name"]))
-
-	if err != nil {
-		log.Fatalf("Unable to get any valid job. %v", err)
-	}
-
-	//send response
-	json.NewEncoder(w).Encode(job)
-}
-
 // GetAllJob will return all the users
 func GetAllJob(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
@@ -230,47 +211,6 @@ func getJob(name string) (models.Job, error) {
 
 	// return empty job on error
 	return job, err
-}
-
-func filterJob(name string) ([]models.Job, error) {
-	//create the progress db connection
-	db := createConnection()
-
-	// close the db connection
-	defer db.Close()
-
-	var jobs []models.Job
-
-	// create select sql query
-	sqlStatement := `SELECT * FROM jobs WHERE jobname=$1 AND location=$2`
-
-	// execute the sql statement
-	rows, err := db.Query(sqlStatement)
-
-	if err != nil {
-		log.Fatalf("Unable to execute query. %v", err)
-	}
-
-	// close the statement
-	defer rows.Close()
-
-	// iterating over rows
-	for rows.Next() {
-		var job models.Job
-
-		// unmarshall the row object to user
-		err = rows.Scan(&job.ID, &job.Name, &job.Openings, &job.Location)
-
-		if err != nil {
-			log.Fatalf("Unable to scan the row. %v", err)
-		}
-
-		jobs = append(jobs, job)
-
-	}
-
-	// return empty job on error
-	return jobs, err
 }
 
 // get one user from the DB by its userid
